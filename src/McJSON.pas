@@ -132,6 +132,7 @@ type
     function Add(const aKey: string; aItemType: TJItemType): TMcJsonItem; overload;
     function Add(aItemType: TJItemType): TMcJsonItem; overload;
     function Add(const aItem: TMcJsonItem): TMcJsonItem; overload;
+    function Add(const aKey: string; Value: Variant): TMcJsonItem; overload;
     function Copy(const aItem: TMcJsonItem): TMcJsonItem; overload;
     function Clone: TMcJsonItem; overload;
     function Insert(const aKey: string; aIdx: Integer): TMcJsonItem; overload;
@@ -1241,6 +1242,32 @@ begin
   // result aNewItem to permit chain
   Result := aNewItem;
 end;
+
+function TMcJsonItem.Add(const aKey: string; Value: Variant): TMcJsonItem;
+var
+  aItem: TMcJsonItem;
+begin
+  aItem := Self.Add(aKey);
+  aItem.ItemType := jitValue;
+  // result aItem to permit chain
+  Result := aItem;
+
+  if VarIsNull(Value) then
+    aItem.AsNull := ''
+  else
+  case VarType(Value) of
+     varEmpty,
+     varNull    : aItem.AsNull := '';
+     varSmallint,
+     varInteger : aItem.AsInteger := Value;
+     varSingle,
+     varDouble,
+     varCurrency : aItem.AsNumber := Value;
+     varBoolean  : aItem.AsBoolean := Value;
+     varString   : aItem.AsString := Value;
+  end;
+end;
+
 
 function TMcJsonItem.Copy(const aItem: TMcJsonItem): TMcJsonItem;
 begin
